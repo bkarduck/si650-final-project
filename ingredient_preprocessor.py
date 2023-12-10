@@ -1,6 +1,9 @@
 from nltk.tokenize import RegexpTokenizer
 import torch
 from transformers import T5Tokenizer, T5ForConditionalGeneration
+import re
+import string
+from nltk.stem import WordNetLemmatizer
 
 
 class Tokenizer:
@@ -47,11 +50,35 @@ class Tokenizer:
             A list of tokens processed by lower-casing depending on the given condition
         """
         # TODO: Add support for lower-casing
+        lemmatizer = WordNetLemmatizer()
+        
         if self.lowercase:
-            input_tokens_lower = [token.lower() for token in input_tokens]
+          
+            translator = str.maketrans("", "", string.punctuation)
+            # input_tokens_lower = [token.translate(translator) for token in input_tokens]
+            new_input_tokens = []
+            for token in input_tokens:
+                # token = lemmatizer.lemmatize(token)
+                token = token.translate(translator)
+                token = token.lower().strip()
+                split_token = token.split()
+                split_toke_list = []
+                for toke in split_token:
+
+                    if toke != '':
+                        w = lemmatizer.lemmatize(toke, pos='n')
+
+                        split_toke_list.append(w)
+                token = ' '.join(split_toke_list)
+                new_input_tokens.append(token)
+
+            # input_tokens_lower = [token.lower().strip() for token in input_tokens]
+            # input_tokens_lower = [token.translate(translator) for token in input_tokens_lower]
+            return new_input_tokens
             return input_tokens_lower
         else:
-            return input_tokens
+            
+            return [token.lower().strip() for token in input_tokens]
     
     def tokenize(self, text: str) -> list[str]:
         """
@@ -64,40 +91,36 @@ class Tokenizer:
             A list of tokens
         """
         raise NotImplementedError('tokenize() is not implemented in the base class; please use a subclass')
-
-
-class RegexTokenizer(Tokenizer):
-    def __init__(self, token_regex: str, lowercase: bool = True, multiword_expressions: list[str] = None) -> None:
+    
+class SplitTokenizer(Tokenizer):
+    def __init__(self, lowercase: bool = True, multiword_expressions: list[str] = None) -> None:
         """
-        Uses NLTK's RegexpTokenizer to tokenize a given string.
+        Uses the split function to tokenize a given string.
 
         Args:
-            token_regex: Use the following default regular expression pattern: '\\w+'
             lowercase: Whether to lowercase all the tokens
             multiword_expressions: A list of strings that should be recognized as single tokens
                 If set to 'None' no multi-word expression matching is performed.
-                No need to perform/implement multi-word expression recognition for HW3; you can ignore this.
+                No need to perform/implement multi-word expression recognition 
         """
         super().__init__(lowercase, multiword_expressions)
-        # TODO: Save a new argument that is needed as a field of this class
-        self.token_regex = token_regex
-        # TODO: Initialize the NLTK's RegexpTokenizer 
-        self.tokenizer = RegexpTokenizer(self.token_regex)
+      
 
     def tokenize(self, text: str) -> list[str]:
-        """Uses NLTK's RegexTokenizer and a regular expression pattern to tokenize a string.
+        # TODO: Implement a tokenizer that uses the split function.
+        """Split a string into a list of tokens using commas as a delimiter.
 
-        Args:
-            text: An input text you want to tokenize
+        Parameters:
 
-        Returns:
-            A list of tokens
+        text [str]: This is an input text you want to tokenize.
+        maybe put an int in as a flag to flag instead of a string
         """
-        # TODO: Tokenize the given text and perform postprocessing on the list of tokens
-        #       using the postprocess function
-        tokens = self.tokenizer.tokenize(text)
+        tokens = text.split(sep=',')
         tokens = self.postprocess(tokens)
         return tokens
+
+
+
 
 
 # TODO (HW3): Take in a doc2query model and generate queries from a piece of text

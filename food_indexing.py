@@ -517,7 +517,11 @@ class Indexer:
         for doc in tqdm(doclist):
             if maxCheck == 0:
                 break
+
+            
             tokens = document_preprocessor.tokenize(doc[text_key])
+            tokens.extend(document_preprocessor.tokenize(doc['title']))
+            tokens.extend(document_preprocessor.tokenize(doc['ingredients']))
             if doc_augment_dict is not None:
                 if doc['docid'] in doc_augment_dict:
                     #doc[text_key] = doc[text_key] + doc_augment_dict[doc['docid']]

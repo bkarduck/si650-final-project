@@ -1,7 +1,4 @@
-"""
-This is the template for implementing the rankers for your search engine.
-You will be implementing WordCountCosineSimilarity, DirichletLM, TF-IDF, BM25, Pivoted Normalization, and your own ranker.
-"""
+
 import numpy as np
 from collections import Counter, defaultdict
 from sentence_transformers import CrossEncoder
@@ -13,144 +10,50 @@ from tqdm import tqdm
 import json
 
 
-# class Ranker:
-#     """
-#     The ranker class is responsible for generating a list of documents for a given query, ordered by their scores
-#     using a particular relevance function (e.g., BM25).
-#     A Ranker can be configured with any RelevanceScorer.
-#     """
-#     # TODO: Implement this class properly; this is responsible for returning a list of sorted relevant documents
-#     def __init__(self, index: InvertedIndex, document_preprocessor: Tokenizer, stopwords: set[str], scorer: 'RelevanceScorer') -> None:
-#         """
-#         Initializes the state of the Ranker object.
-
-#         TODO (HW3): Previous homeworks had you passing the class of the scorer to this function
-#         This has been changed as it created a lot of confusion.
-#         You should now pass an instantiated RelevanceScorer to this function.
-
-#         Args:
-#             index: An inverted index
-#             document_preprocessor: The DocumentPreprocessor to use for turning strings into tokens
-#             stopwords: The set of stopwords to use or None if no stopword filtering is to be done
-#             scorer: The RelevanceScorer object
-#         """
-#         self.index = index
-#         #self.tokenize = document_preprocessor.tokenize
-#         self.doc_preprocessor = document_preprocessor
-
-#         if isinstance(scorer, type):
-#             scorer = scorer(self.index)
-#         self.scorer = scorer
-#         self.stopwords = stopwords
-
-#     def query(self, query: str) -> list[tuple[int, float]]:
-#         """
-#         Searches the collection for relevant documents to the query and
-#         returns a list of documents ordered by their relevance (most relevant first).
-
-#         Args:
-#             query: The query to search for
-
-#         Returns:
-#             A list of dictionary objects with keys "docid" and "score" where docid is
-#             a particular document in the collection and score is that document's relevance
-
-#         TODO (HW3): We are standardizing the query output of Ranker to match with L2RRanker.query and VectorRanker.query
-#         The query function should return a sorted list of tuples where each tuple has the first element as the document ID
-#         and the second element as the score of the document after the ranking process.
-#         """
-#         # TODO: Tokenize the query and remove stopwords, if needed
-#         #tokenized_query = self.doc_preprocessor.tokenize(query)
-#         #tokenized_query = self.tokenize(query)
-        
-#         tokenized_query = self.doc_preprocessor.tokenize(query)
-#         if self.stopwords is not None and len(self.stopwords) > 0:
-#             tokenized_query = [word for word in tokenized_query if word not in self.stopwords]
-
-#         print(tokenized_query)
-       
-
-#         # TODO: Fetch a list of possible documents from the index and create a mapping from
-#         #       a document ID to a dictionary of the counts of the query terms in that document.
-#         #       You will pass the dictionary to the RelevanceScorer as input.
-       
-#         # TODO: Rank the documents using a RelevanceScorer (like BM25 from below classes) 
-#         possible_docs = []
-#         docQueryCounts = defaultdict(lambda: defaultdict(int))
-#         #print('query len', len(set(tokenized_query)), 'query', set(tokenized_query))
-#         for term in tqdm(set(tokenized_query)):
-           
-#             if term == None:
-#                 continue
-#             else:
-#                 # import time
-#                 # start_time = time.time()
-#                 postings = self.index.get_postings(term)
-#                 #print('time to query',time.time() - start_time)
-
-#                 if postings is None:
-#                     continue
-#                 for posting in tqdm(postings):
-#                     #print(posting)
-#                     docQueryCounts[posting[0]][term] = posting[1]
-#                     if int(posting[0]) not in possible_docs:
-#                         possible_docs.append(int(posting[0]))
-
-#         # TODO: Return the **sorted** results as format [{docid: 100, score:0.5}, {{docid: 10, score:0.2}}]
-#         results = []
-#         #print(possible_docs)
-       
-#         if len(possible_docs) == 0:
-#             return results
-#         for doc in possible_docs:
-#             score = self.scorer.score(doc, docQueryCounts[doc], tokenized_query)
-#             #results.append({'docid': doc, 'score': score})
-#             results.append((doc, score))
-
-#         #results.sort(key=lambda x: x['score'], reverse=True)
-#         results.sort(key=lambda x: x[1], reverse=True)
-#         #print(results)
-        
-#         return results
-    
-
 class Ranker:
     '''
     The ranker class is responsible for generating a list of documents for a given query, ordered by their
     scores using a particular relevance function (e.g., BM25). A Ranker can be configured with any RelevanceScorer.
     '''
 
-    # NOTE: (hw2) Note that `stopwords: set[str]` is a new parameter that you will need to use in your code.
-    def __init__(self, index: InvertedIndex, document_preprocessor, stopwords: set[str], scorer: 'RelevanceScorer') -> None:
+
+    def __init__(self, food_index: InvertedIndex, ingredient_index: InvertedIndex, food_preprocessor, ingredient_preprocessor, stopwords: set[str], scorer: 'RelevanceScorer') -> None:
         '''
         Initializes the state of the Ranker object 
         '''
-        self.index = index
-        self.tokenize = document_preprocessor.tokenize
+        self.index = food_index
+        self.ingredient_index = ingredient_index
+        self.tokenize = food_preprocessor.tokenize
+        self.ingredient_tokenize = ingredient_preprocessor.tokenize
         if isinstance(scorer, type):
             scorer = scorer(self.index)
         self.scorer = scorer
         self.stopwords = stopwords
         
 
-    # NOTE: (hw2): `query(self, query: str) -> list[dict]` is a new function that you will need to implement.
-    #            see more in README.md.
-    def query(self, query: str) -> list[dict]:
+    # def query(self, query: str) -> list[dict]:
+        # append based off of ingredients??? for MWF
+    def query(self, query_ingr: str, query_freetext:str, query_NOT:str) -> list[tuple[int, float]]:
         '''
         Searches the collection for relevant documents to the query and returns a list 
         of documents ordered by their relevance (most relevant first).
 
         Args:
-            query (str): The query to search for
+            query_ingr (str): The string of the list of the ingredients to search for
+            query_freetext (str): The string of the free text the user can input 
+            query_NOT (str): The string of the list of the ingredients to not include
+
 
         Returns:
-            list: a list of dictionary objects with keys "docid" and "score" where docid is a
-                  particular document in the collection and score is that document's relevance
+            list: a list of dictionary objects with keys "docid" and "score" where docid is a particular document in the collection and score is that document's relevance
         '''
-        # TODO (hw1): Tokenize the query and remove stopwords, if needed
+        # append ingredients and free text
+        query = query_ingr + ' ' + query_freetext
+        print(query)
         tokenized_query = self.tokenize(query)
         if self.stopwords is not None and len(self.stopwords) > 0:
             tokenized_query = [word for word in tokenized_query if word not in self.stopwords]
+        print(tokenized_query)
 
         
         # TODO (hw2): Fetch a list of possible documents from the index and create a mapping from
@@ -167,20 +70,56 @@ class Ranker:
 
                 if postings is None:
                     continue
-                for posting in postings:
-                    #print(posting)
-                    docQueryCounts[posting[0]][term] = posting[1]
-                    possible_docs.append(int(posting[0]))
+                for docid, freq in postings:
+                    
+                    docQueryCounts[docid][term] = freq
+                    possible_docs.append(int(docid))
+        
+        cleaned_docs = set(possible_docs)
+        # use ingredient tokenizer which lemmatizes query for food items
+        # people don't want
+        query_NOT_tokenized = self.ingredient_tokenize(query_NOT)
+        if self.stopwords is not None and len(self.stopwords) > 0:
+            query_NOT_tokenized = [word for word in query_NOT_tokenized if word not in self.stopwords]
+        
+        for term in query_NOT_tokenized:
+            print(term)
+            # use ingredient index to get the allergy/not wanted postings
+            bad_postings = self.ingredient_index.get_postings(term)
+            # all_terms = list(self.ingredient_index.index.keys())
+            bad_postings_list = []
+            if len(term.split()) == 1:
+                all_terms = list(self.ingredient_index.index.keys())
+                bad_postings_list = []
+                for word in all_terms:
+                
+                    if term in word and term != word:
+                        bad_postings_list.append(self.ingredient_index.get_postings(word))
+                for postings in bad_postings_list:
+                    if postings is None:
+                        continue
+                    for docid, freq in postings:
+                        if docid in cleaned_docs:
+                            cleaned_docs.remove(docid)
+                # bad_postings = self.ingredient_index.get_postings(term)
+            if bad_postings is None:
+                continue
+            for docid, freq in bad_postings:
 
+                if docid in cleaned_docs:
+                    cleaned_docs.remove(docid)
+          
+
+            
         # NOTE: The accumulate_doc_term_counts() method for L2RRanker in l2r.py does something very
         # similar to what is needed for this step
 
         # TODO (hw1): Rank the documents using a RelevanceScorer (like BM25 from the below classes) 
         results = []
        
-        if len(possible_docs) == 0:
+        if len(cleaned_docs) == 0:
             return results
-        for doc in set(possible_docs):
+        for doc in cleaned_docs:
             #print(tokenized_query)
             score = self.scorer.score(docid=doc, doc_word_counts=docQueryCounts[doc], query_parts=tokenized_query)
             #results.append({'docid': doc, 'score': score})
