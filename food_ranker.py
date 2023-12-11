@@ -29,10 +29,9 @@ class Ranker:
             scorer = scorer(self.index)
         self.scorer = scorer
         self.stopwords = stopwords
-        
 
-    # def query(self, query: str) -> list[dict]:
-        # append based off of ingredients??? for MWF
+
+
     def query(self, query_ingr: str, query_freetext:str, query_NOT:str) -> list[tuple[int, float]]:
         '''
         Searches the collection for relevant documents to the query and returns a list 
@@ -42,7 +41,6 @@ class Ranker:
             query_ingr (str): The string of the list of the ingredients to search for
             query_freetext (str): The string of the free text the user can input 
             query_NOT (str): The string of the list of the ingredients to not include
-
 
         Returns:
             list: a list of dictionary objects with keys "docid" and "score" where docid is a particular document in the collection and score is that document's relevance
@@ -56,10 +54,9 @@ class Ranker:
         print(tokenized_query)
 
         
-        # TODO (hw2): Fetch a list of possible documents from the index and create a mapping from
-        # a document ID to a dictionary of the counts of the query terms in that document.
+        # TODO Fetch a list of possible documents from the index and create a mapping from a document ID to a dictionary of the counts of the query terms in that document.
         # You will pass the dictionary to the RelevanceScorer as input.
-        #
+        
         possible_docs = []
         docQueryCounts = defaultdict(dict)
         for term in set(tokenized_query):
@@ -110,25 +107,20 @@ class Ranker:
                     cleaned_docs.remove(docid)
           
 
-            
-        # NOTE: The accumulate_doc_term_counts() method for L2RRanker in l2r.py does something very
-        # similar to what is needed for this step
-
-        # TODO (hw1): Rank the documents using a RelevanceScorer (like BM25 from the below classes) 
+        # TODO Rank the documents using a RelevanceScorer (like BM25 from the below classes) 
         results = []
        
         if len(cleaned_docs) == 0:
             return results
         for doc in cleaned_docs:
-            #print(tokenized_query)
+   
             score = self.scorer.score(docid=doc, doc_word_counts=docQueryCounts[doc], query_parts=tokenized_query)
-            #results.append({'docid': doc, 'score': score})
+       
             results.append((doc, score))
 
-        #results.sort(key=lambda x: x['score'], reverse=True)
         results.sort(key=lambda x: x[1], reverse=True)
         
-        # TODO (hw1): Return the **sorted** results as format [{docid: 100, score:0.5}, {{docid: 10, score:0.2}}]
+        # TODO Return the **sorted** results as format [{docid: 9, score:0.5}, {{docid: 10, score:0.2}}] in descending score
         return results
 
 
@@ -137,8 +129,7 @@ class RelevanceScorer:
     This is the base interface for all the relevance scoring algorithm.
     It will take a document and attempt to assign a score to it.
     """
-    # TODO (HW1): Implement the functions in the child classes (WordCountCosineSimilarity, DirichletLM,
-    #             BM25, PivotedNormalization, TF_IDF) and not in this one
+    # TODO Implement the functions in the child classes (WordCountCosineSimilarity, DirichletLM, BM25, PivotedNormalization, TF_IDF) and not in this one
     def __init__(self, index: InvertedIndex, parameters) -> None:
         self.index = index
         self.parameters = parameters
@@ -147,8 +138,7 @@ class RelevanceScorer:
         self.total_docs = self.statistics['number_of_documents']
         self.total_token_count = self.statistics['total_token_count']
 
-    # NOTE (hw2): Note the change here: `score(self, docid: int, doc_word_counts: dict[str, int], query_parts: list[str]) -> float`
-    #             See more in README.md.
+  
     def score(self, docid: int, doc_word_counts: dict[str, int], query_parts: list[str]) -> float:
         """
         Returns a score for how relevance is the document for the provided query.
@@ -195,10 +185,10 @@ class WordCountCosineSimilarity(RelevanceScorer):
         score = np.dot(vector1, vector2)
 
         # 2. Return the score
-        return score  # (`score` should be defined in your code; you can call it whatever you want)
+        return score  
 
 
-# TODO (HW1): Implement DirichletLM
+# TODO  Implement DirichletLM
 class DirichletLM(RelevanceScorer):
     def __init__(self, index: InvertedIndex, parameters={'mu': 2000}) -> None:
         super().__init__(index, parameters)
@@ -227,8 +217,6 @@ class DirichletLM(RelevanceScorer):
                 continue
             docCount = doc_word_counts[query]
 
-            # if docCount == 0:
-            #     continue
 
 
             numTimesTermInDoc = self.index.get_term_metadata(query)['term_total_count']
@@ -243,10 +231,10 @@ class DirichletLM(RelevanceScorer):
         score += smoother
 
         # 4. Return the score
-        return score  # (`score` should be defined in your code; you can call it whatever you want)
+        return score  
 
 
-# TODO (HW1): Implement BM25
+# TODO Implement BM25
 class BM25(RelevanceScorer):
     def __init__(self, index: InvertedIndex, parameters={'b': 0.75, 'k1': 1.2, 'k3': 8}) -> None:
         super().__init__(index, parameters)
@@ -285,10 +273,10 @@ class BM25(RelevanceScorer):
         # 3. For all query parts, compute the TF and IDF to get a score
 
         # 4. Return score
-        return score  # (`score` should be defined in your code; you can call it whatever you want)
+        return score  
 
 
-# TODO (HW1): Implement Pivoted Normalization
+# TODO Implement Pivoted Normalization
 class PivotedNormalization(RelevanceScorer):
     def __init__(self, index: InvertedIndex, parameters={'b': 0.2}) -> None:
         super().__init__(index, parameters)
@@ -306,7 +294,7 @@ class PivotedNormalization(RelevanceScorer):
             query_count = countQuery[query]
             if query not in doc_word_counts.keys():
                 continue
-            #docCount = doc_word_counts[docid][query]
+     
             docCount = doc_word_counts[query]
             postings = self.index.get_postings(query)
             docContainTerm = len(postings)
@@ -331,10 +319,10 @@ class PivotedNormalization(RelevanceScorer):
             ## doc_frq will always be >0 since only looking at terms that are in both query and doc
 
         # 4. Return the score
-        return score  # (`score` should be defined in your code; you can call it whatever you want)
+        return score  
 
 
-# TODO (HW1): Implement TF-IDF
+# TODO Implement TF-IDF
 class TF_IDF(RelevanceScorer):
     def __init__(self, index: InvertedIndex, parameters={}) -> None:
         super().__init__(index, parameters)
@@ -350,7 +338,6 @@ class TF_IDF(RelevanceScorer):
                 continue
             docCount = doc_word_counts[query]
 
-            #docCount = doc_word_counts[docid][query]
             postings = self.index.get_postings(query)
             docContainTerm = len(postings)
             tf = math.log(docCount + 1)
@@ -364,11 +351,10 @@ class TF_IDF(RelevanceScorer):
         # 3. For all query parts, compute the TF, IDF, and QTF values to get a score
 
         # 4. Return the score
-        return score  # (`score` should be defined in your code; you can call it whatever you want)
+        return score  
 
 
-# TODO (HW3): The CrossEncoderScorer class uses a pre-trained cross-encoder model from the Sentence Transformers package
-#             to score a given query-document pair; check README for details
+# TODO The CrossEncoderScorer class uses a pre-trained cross-encoder model from the Sentence Transformers package to score a given query-document pair; Used in rankings with a document augmentation step
 class CrossEncoderScorer:
     def __init__(self, raw_text_dict: dict[int, str], cross_encoder_model_name: str = 'cross-encoder/msmarco-MiniLM-L6-en-de-v1') -> None:
         """
@@ -381,7 +367,7 @@ class CrossEncoderScorer:
         """
         # TODO: Save any new arguments that are needed as fields of this class
         self.raw_text_dict = raw_text_dict
-        self.cross_encoder_model = CrossEncoder(cross_encoder_model_name, max_length=512)
+        self.cross_encoder_model = CrossEncoder(cross_encoder_model_name, max_length=512, device='mps')
 
     def score(self, docid: int, query: str) -> float:
         """
@@ -401,17 +387,12 @@ class CrossEncoderScorer:
         if query == None:
             return 0
 
-        # TODO (HW3): Get a score from the cross-encoder model
-        #             Refer to IR_Encoder_Examples.ipynb in Demos folder on Canvas if needed
+        # TODO Get a score from the cross-encoder model
+      
         document = self.raw_text_dict[docid]
-        # pair = [(query, document)]
+      
         scores = self.cross_encoder_model.predict([(query, document)])
         return scores[0]
-
-
-# TODO (HW1): Implement your own ranker with proper heuristics
-class YourRanker(RelevanceScorer):
-    pass
 
 
 class SampleScorer(RelevanceScorer):
@@ -426,9 +407,9 @@ class SampleScorer(RelevanceScorer):
         return 10
     
 if __name__ == '__main__':
-
+    MAIN_INDEX = 'main_index'
     main_index = InvertedIndex()
-    main_index.load('main_index_augmented')
+    main_index.load(MAIN_INDEX)
     stopwords = set()
     STOPWORD_PATH = 'stopwords.txt'
     with open(STOPWORD_PATH, 'r', encoding='utf-8') as file:
@@ -439,47 +420,11 @@ if __name__ == '__main__':
     print('querytime')
 
     queries = [
-        'hello my beautiful people',
+        'CHICKEN',
         'machine learning',
         'information retrieval',
         'university of waterloo',
         'computer science is amazing',
     ]
-    rankerboi = Ranker(main_index, preprocessor, stopwords, BM25)
-    for query in tqdm(queries):
-        rankerboi.query(query)
-
-  
-  
-    # docid_to_categories = {}
-    # DATASET_PATH = 'wikipedia_200k_dataset.jsonl'
-    # with open(DATASET_PATH, 'rt', encoding='utf-8') as file:
-    #     for line in tqdm(file, total=200_000):
-    #         document = json.loads(line)
-    #         docid_to_categories[document['docid']] = document['categories']
-    # category_counts = Counter()
-    # for cats in tqdm(docid_to_categories.values(), total=len(docid_to_categories)):
-    #     for c in cats:
-    #         category_counts[c] += 1
-    # recognized_categories = set(
-    #     [cat for cat, count in category_counts.items() if count >= 1000])
-    # doc_category_info = {}
-    # for docid, cats in tqdm(docid_to_categories.items(), total=len(docid_to_categories)):
-    #     valid_cats = [c for c in cats if c in recognized_categories]
-    #     doc_category_info[docid] = valid_cats
-    # network_features = {}
-    # NETWORK_STATS_PATH = 'network_stats.csv'
-
-    # with open(NETWORK_STATS_PATH, 'r', encoding='utf-8') as file:
-    #         for idx, line in enumerate(file):
-    #             if idx == 0:
-    #                 continue
-    #             else:
-    #                 # the indexes may change depending on your CSV
-    #                 splits = line.strip().split(',')
-    #                 network_features[int(splits[0])] = {
-    #                     'pagerank': float(splits[1]),
-    #                     'authority_score': float(splits[2]),
-    #                     'hub_score': float(splits[3])
-    #                 }
-
+   
+ 

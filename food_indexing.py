@@ -562,41 +562,12 @@ class Indexer:
             index.add_doc(doc['recipeID'], tokenized_doc)
             max_docs -= 1
 
-        # TODO (HW3): This function now has an optional argument doc_augment_dict; check README
-       
-        # HINT: Think of what to do when doc_augment_dict exists, how can you deal with the extra information?
-        #       How can you use that information with the tokens?
-        #       If doc_augment_dict doesn't exist, it's the same as before, tokenizing just the document text
-          
-        # TODO: Implement this class properly. This is responsible for going through the documents
-        #       one by one and inserting them into the index after tokenizing the document
-
-        # TODO: Figure out what type of InvertedIndex to create.
-        #       For HW3, only the BasicInvertedIndex is required to be supported
-
-        # TODO: If minimum word frequencies are specified, process the collection to get the
-        #       word frequencies
-
-        # NOTE: Make sure to support both .jsonl.gz and .jsonl as input
-                      
-        # TODO: Figure out which set of words to not index because they are stopwords or
-        #       have too low of a frequency
-
-        # HINT: This homework should work fine on a laptop with 8GB of memory but if you need,
-        #       you can delete some unused objects here to free up some space
-
-        # TODO: Read the collection and process/index each document.
-        #       Only index the terms that are not stopwords and have high-enough frequency
 
         return index
     
 if __name__ == "__main__":
 
-    # stopwords = []
-    # with open ('stopwords.txt', 'r') as f:
-    #     for line in f:
-    #         stopwords.append(line.strip())
-    #     #stopwords = f.readlines()
+  
 
     setOfStopwords = {'and', 'the', 'or', 'could', 'if'}
     preprocessor = RegexTokenizer('\w+', lowercase=True, multiword_expressions=None)

@@ -14,26 +14,12 @@ class Tokenizer:
             lowercase: Whether to lowercase all the tokens
             multiword_expressions: A list of strings that should be recognized as single tokens
                 If set to 'None' no multi-word expression matching is performed.
-                No need to perform/implement multi-word expression recognition for HW3.
+             
         """
         self.lowercase = lowercase
         self.multiword_expressions = multiword_expressions
         # TODO: Save arguments that are needed as fields of this class
 
-    def find_and_replace_mwes(self, input_tokens: list[str]) -> list[str]:
-        """
-        IGNORE THIS PART; NO NEED TO IMPLEMENT THIS SINCE NO MULTI-WORD EXPRESSION PROCESSING IS TO BE USED.
-        For the given sequence of tokens, finds any recognized multi-word expressions in the sequence
-        and replaces that subsequence with a single token containing the multi-word expression.
-
-        Args:
-            input_tokens: A list of tokens
-
-        Returns:
-            A list of tokens containing processed multi-word expressions
-        """
-        # NOTE: You shouldn't implement this in homework 
-        raise NotImplemented("MWE is not supported")
     
     def postprocess(self, input_tokens: list[str]) -> list[str]:
         """
@@ -76,7 +62,7 @@ class RegexTokenizer(Tokenizer):
             lowercase: Whether to lowercase all the tokens
             multiword_expressions: A list of strings that should be recognized as single tokens
                 If set to 'None' no multi-word expression matching is performed.
-                No need to perform/implement multi-word expression recognition for HW3; you can ignore this.
+               
         """
         super().__init__(lowercase, multiword_expressions)
         # TODO: Save a new argument that is needed as a field of this class
@@ -93,16 +79,14 @@ class RegexTokenizer(Tokenizer):
         Returns:
             A list of tokens
         """
-        # TODO: Tokenize the given text and perform postprocessing on the list of tokens
-        #       using the postprocess function
+        # TODO: Tokenize the given text and perform postprocessing on the list of tokens using the postprocess function
         tokens = self.tokenizer.tokenize(text)
         tokens = self.postprocess(tokens)
         return tokens
 
 
-# TODO (HW3): Take in a doc2query model and generate queries from a piece of text
-# Note: This is just to check you can use the models;
-#       for downstream tasks such as index augmentation with the queries, use doc2query.csv
+# TODO Take in a doc2query model and generate queries from a piece of text
+# Note: This is just to check you can use the models; for downstream tasks such as index augmentation with the queries, use doc2query.csv
 class Doc2QueryAugmenter:
     """
     This class is responsible for generating queries for a document.
@@ -136,9 +120,6 @@ class Doc2QueryAugmenter:
          
             Ensure you take care of edge cases.
          
-        OPTIONAL (DO NOT DO THIS before you finish the assignment):
-            Neural models are best performing when batched to the GPU.
-            Try writing a separate function which can deal with batches of documents.
         
         Args:
             document: The text from which queries are to be generated

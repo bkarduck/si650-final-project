@@ -17,26 +17,11 @@ class Tokenizer:
             lowercase: Whether to lowercase all the tokens
             multiword_expressions: A list of strings that should be recognized as single tokens
                 If set to 'None' no multi-word expression matching is performed.
-                No need to perform/implement multi-word expression recognition for HW3.
+              
         """
         self.lowercase = lowercase
         self.multiword_expressions = multiword_expressions
-        # TODO: Save arguments that are needed as fields of this class
-
-    def find_and_replace_mwes(self, input_tokens: list[str]) -> list[str]:
-        """
-        IGNORE THIS PART; NO NEED TO IMPLEMENT THIS SINCE NO MULTI-WORD EXPRESSION PROCESSING IS TO BE USED.
-        For the given sequence of tokens, finds any recognized multi-word expressions in the sequence
-        and replaces that subsequence with a single token containing the multi-word expression.
-
-        Args:
-            input_tokens: A list of tokens
-
-        Returns:
-            A list of tokens containing processed multi-word expressions
-        """
-        # NOTE: You shouldn't implement this in homework 
-        raise NotImplemented("MWE is not supported")
+      
     
     def postprocess(self, input_tokens: list[str]) -> list[str]:
         """
@@ -47,7 +32,7 @@ class Tokenizer:
             input_tokens: A list of tokens
 
         Returns:
-            A list of tokens processed by lower-casing depending on the given condition
+            A list of tokens processed by lower-casing and lemmatizing depending on the given condition
         """
         # TODO: Add support for lower-casing
         lemmatizer = WordNetLemmatizer()
@@ -55,10 +40,10 @@ class Tokenizer:
         if self.lowercase:
           
             translator = str.maketrans("", "", string.punctuation)
-            # input_tokens_lower = [token.translate(translator) for token in input_tokens]
+
             new_input_tokens = []
             for token in input_tokens:
-                # token = lemmatizer.lemmatize(token)
+              
                 token = token.translate(translator)
                 token = token.lower().strip()
                 split_token = token.split()
@@ -72,13 +57,12 @@ class Tokenizer:
                 token = ' '.join(split_toke_list)
                 new_input_tokens.append(token)
 
-            # input_tokens_lower = [token.lower().strip() for token in input_tokens]
-            # input_tokens_lower = [token.translate(translator) for token in input_tokens_lower]
+        
             return new_input_tokens
-            return input_tokens_lower
+      
         else:
             
-            return [token.lower().strip() for token in input_tokens]
+            return [token.strip() for token in input_tokens]
     
     def tokenize(self, text: str) -> list[str]:
         """
@@ -123,9 +107,8 @@ class SplitTokenizer(Tokenizer):
 
 
 
-# TODO (HW3): Take in a doc2query model and generate queries from a piece of text
-# Note: This is just to check you can use the models;
-#       for downstream tasks such as index augmentation with the queries, use doc2query.csv
+# TODO Take in a doc2query model and generate queries from a piece of text
+# Note: This is just to check you can use the models; for downstream tasks such as index augmentation with the queries, use doc2query.csv
 class Doc2QueryAugmenter:
     """
     This class is responsible for generating queries for a document.
@@ -158,10 +141,6 @@ class Doc2QueryAugmenter:
             4. Return the queries.
          
             Ensure you take care of edge cases.
-         
-        OPTIONAL (DO NOT DO THIS before you finish the assignment):
-            Neural models are best performing when batched to the GPU.
-            Try writing a separate function which can deal with batches of documents.
         
         Args:
             document: The text from which queries are to be generated
@@ -198,9 +177,6 @@ class Doc2QueryAugmenter:
         queries = []
         for i in range(len(outputs)):
             queries.append(self.tokenizer.decode(outputs[i], skip_special_tokens=True))
-        # NOTE: Do not forget edge cases
+
         return queries
-
-
-# Don't forget that you can have a main function here to test anything in the file
 

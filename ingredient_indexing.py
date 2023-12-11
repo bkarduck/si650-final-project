@@ -11,11 +11,9 @@ import csv
 
 
 class IndexType(Enum):
-    # The three types of index currently supported are InvertedIndex, PositionalIndex and OnDiskInvertedIndex
+    # The index currently support is InvertedIndex, 
     InvertedIndex = 'BasicInvertedIndex'
-    # NOTE: You don't need to support the following three
-    PositionalIndex = 'PositionalIndex'
-    OnDiskInvertedIndex = 'OnDiskInvertedIndex'
+   
     SampleIndex = 'SampleIndex'
 
 
@@ -296,7 +294,7 @@ class BasicInvertedIndex(InvertedIndex):
         unique_token_count = 0
         unique_tokens = len(set(tokens))
         counterTokens = Counter(tokens)
-        #print(counterTokens)
+ 
 
         for token, freq in counterTokens.items():
             if token:
@@ -355,14 +353,13 @@ class BasicInvertedIndex(InvertedIndex):
             self.statistics['total_token_count'] = 0
             self.statistics['number_of_documents'] = 0
             self.statistics['mean_document_length'] = 0
-            #mean_document_length = 0
-            #self.statistics['stored_total_token_count'] = 0
+       
         else: 
             for doc in self.document_metadata:
                 document_length += self.document_metadata[doc]['length']
             
                 total_token_count += self.document_metadata[doc]['length']
-                # stored_total_token_count += self.document_metadata[doc]['unique_token_count']
+          
 
             
             number_of_documents = len(self.document_metadata)
@@ -414,39 +411,8 @@ class BasicInvertedIndex(InvertedIndex):
                 self.statistics = dictToOpen['statistics']
                 self.vocabulary = set(dictToOpen['vocab'])
 
-class PositionalInvertedIndex(BasicInvertedIndex):
-    def __init__(self, index_name) -> None:
-        """
-        This is the positional index where each term keeps track of documents and positions of the terms
-        occurring in the document.
-        """
-        super().__init__(index_name)
-        self.statistics['index_type'] = 'PositionalInvertedIndex'
-        # For example, you can initialize the index and statistics here:
-        #   self.statistics['offset'] = [0]
-        #   self.statistics['docmap'] = {}
-        #   self.doc_id = 0
-        #   self.postings_id = -1
-
-    # TODO: Do nothing, unless you want to explore using a positional index for some cool features
 
 
-class OnDiskInvertedIndex(BasicInvertedIndex):
-    def __init__(self, shelve_filename) -> None:
-        """
-        This is an inverted index where the inverted index's keys (words) are kept in memory but the
-        postings (list of documents) are on desk.
-        The on-disk part is expected to be handled via a library.
-        """
-        super().__init__()
-        self.shelve_filename = shelve_filename
-        self.statistics['index_type'] = 'OnDiskInvertedIndex'
-        # Ensure that the directory exists
-        # self.index = shelve.open(self.shelve_filename, 'index')
-        # self.statistics['docmap'] = {}
-        # self.doc_id = 0
-
-    # NOTE: Do nothing, unless you want to re-experience the pain of cross-platform compatibility :'(
 
 
 class Indexer:
@@ -480,11 +446,7 @@ class Indexer:
             An inverted index
         """
 
-        if index_type == 'OnDiskInvertedIndex':
-            index = OnDiskInvertedIndex()
-        elif index_type == 'PositionalIndex':
-            index = PositionalInvertedIndex()
-        elif index_type == 'InvertedIndex':
+        if index_type == 'InvertedIndex':
             index = BasicInvertedIndex()
         else:
             index = BasicInvertedIndex()
@@ -510,7 +472,7 @@ class Indexer:
 
         do_not_index = []
 
-        tokens_list = []
+      
         word_counts = Counter()
         maxCheck = max_docs
 
