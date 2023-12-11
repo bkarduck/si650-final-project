@@ -304,7 +304,7 @@ class BasicInvertedIndex(InvertedIndex):
                 self.index[token] = termCs
                 unique_token_count += freq
         self.document_metadata[docid] = {'length': length, 'unique_tokens': unique_tokens, 'unique_token_count': unique_token_count}
-    def get_postings(self, term: str) -> dict[str|int, int|list]:
+    def get_postings(self, term: str) -> dict[str or int, int or list]:
         # TODO implement this to fetch a term's postings from the index
         if term in self.index:
            
@@ -423,7 +423,7 @@ class Indexer:
     def create_index(index_type: IndexType, dataset_path: str,
                      document_preprocessor: Tokenizer, stopwords: set[str],
                      minimum_word_frequency: int, text_key="NER",
-                     max_docs: int = -1, doc_augment_dict: dict[int, list[str]] | None = None) -> InvertedIndex:
+                     max_docs: int = -1, doc_augment_dict: dict[int, list[str]] or None = None) -> InvertedIndex:
         """
         Creates an inverted index.
 
