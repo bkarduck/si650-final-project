@@ -47,11 +47,11 @@ class Ranker:
         '''
         # append ingredients and free text
         query = query_ingr + ' ' + query_freetext
-        print(query)
+        #print(query)  # DEBUGGING
         tokenized_query = self.tokenize(query)
         if self.stopwords is not None and len(self.stopwords) > 0:
             tokenized_query = [word for word in tokenized_query if word not in self.stopwords]
-        print(tokenized_query)
+        #print(tokenized_query)  # DEBUGGING
 
         
         # TODO Fetch a list of possible documents from the index and create a mapping from a document ID to a dictionary of the counts of the query terms in that document.
@@ -80,7 +80,7 @@ class Ranker:
             query_NOT_tokenized = [word for word in query_NOT_tokenized if word not in self.stopwords]
         
         for term in query_NOT_tokenized:
-            print(term)
+            #print(term)  # DEBUGGING
             # use ingredient index to get the allergy/not wanted postings
             bad_postings = self.ingredient_index.get_postings(term)
             # all_terms = list(self.ingredient_index.index.keys())

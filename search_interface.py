@@ -23,7 +23,7 @@ with open(STOPWORDS_PATH, 'r', encoding='utf-8') as file:
     for stopword in file:
         stopwords.add(stopword.strip())
 
-print(f'Stopwords collected {len(stopwords)}')
+#print(f'Stopwords collected {len(stopwords)}')
 
 # stopwords = {'and', 'the', 'or', 'is', 'for'}
 text_key = 'NER'
@@ -41,12 +41,10 @@ ranker = Ranker(food_index, ingredient_index, preprocessor, ingredient_tokenizer
 
 top25 = ranker.query(query_ingr='pie, flour, cream, apples, blueberries', query_freetext='sweet and spicy pie', query_NOT='eggs, pecans, nuts, almonds')[:25]
 
-#print(top25)
+#print(top25)  # DEBUGGING
 
 with open(ID_TO_RECIPE_PATH, 'r') as json_file:
     id_to_recipe = json.load(json_file)
-
-#print(top25)
 
 print('RESULTS:')
 
