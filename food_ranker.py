@@ -17,7 +17,7 @@ class Ranker:
     '''
 
 
-    def __init__(self, food_index: InvertedIndex, ingredient_index: InvertedIndex, food_preprocessor, ingredient_preprocessor, stopwords: set[str], scorer: 'RelevanceScorer') -> None:
+    def __init__(self, food_index: InvertedIndex, ingredient_index: InvertedIndex, food_preprocessor, ingredient_preprocessor, stopwords: set[str], scorer: 'RelevanceScorer', id_to_recipe: dict[int: tuple[str, str, list[str]]]) -> None:
         '''
         Initializes the state of the Ranker object 
         '''
@@ -29,7 +29,7 @@ class Ranker:
             scorer = scorer(self.index)
         self.scorer = scorer
         self.stopwords = stopwords
-
+        self.id_to_recipe = id_to_recipe
 
 
     def query(self, query_ingr: str, query_freetext:str, query_NOT:str) -> list[tuple[int, float]]:
@@ -67,6 +67,7 @@ class Ranker:
 
                 if postings is None:
                     continue
+
                 for docid, freq in postings:
                     
                     docQueryCounts[docid][term] = freq
@@ -119,6 +120,19 @@ class Ranker:
             results.append((doc, score))
 
         results.sort(key=lambda x: x[1], reverse=True)
+
+        # LET'S TRY RERANKING THE TOP 100 BASED ON INGREDIENTS!!!
+        # the main idea will boost recipes higher up based on the
+        # PROPORTION of requested ingredients, e.g., if two recipes, A
+        # and B, have 5 ingredients and 20 ingredients respectively, and
+        # they both contain 3 ingredients the user specifically requested,
+        # then document A will be higher (3/5) than B (3/20), but BOTH
+        # will be higher than documents that contian none of the requested
+        # ingredients, but still might match the free text query
+        top_100, after_top_100 = results[:100], results[100:]
+
+        # combine the results again
+        results = top_100 + after_top_100
         
         # TODO Return the **sorted** results as format [{docid: 9, score:0.5}, {{docid: 10, score:0.2}}] in descending score
         return results
@@ -416,7 +430,7 @@ if __name__ == '__main__':
         for stopword in file:
             stopwords.add(stopword.strip())
 
-    preprocessor = RegexTokenizer('\w+')
+    food_preprocessor = RegexTokenizer('\w+')
     print('querytime')
 
     queries = [

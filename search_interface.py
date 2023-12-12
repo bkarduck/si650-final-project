@@ -38,7 +38,7 @@ def get_user_input():
             query_NOT = input('Enter unwanted ingredients separated by commas (e.g., eggs, pecans, milk, celery) this can be left blank: ')
 
             if not query_freetext:
-                raise ValueError("Please provide valid input for all fields.")
+                raise ValueError("Please provide valid input for at least the general query.")
             
             return query_freetext, query_ingr, query_NOT
         except ValueError as ve:
@@ -46,8 +46,6 @@ def get_user_input():
 
 
 print('\nLoading necessary data...')
-
-ingredient_tokenizer = ip.SplitTokenizer()
 
 stopwords = set()
 
@@ -57,25 +55,25 @@ with open(STOPWORDS_PATH, 'r', encoding='utf-8') as file:
 
 #print(f'Stopwords collected {len(stopwords)}')  # DEBUGGING
 
-# stopwords = {'and', 'the', 'or', 'is', 'for'}
-text_key = 'NER'
-doc_augment_dict = {}
-food_preprocessor = fp.RegexTokenizer('/w+')
-
 ingredient_index = ingredient_indexing.InvertedIndex()
 ingredient_index.load(INGREDIENT_INDEX_PATH)
 
 food_index = food_indexing.InvertedIndex()
 food_index.load(FOOD_INDEX_PATH)
 
-preprocessor = fp.RegexTokenizer('\w+', lowercase=True, multiword_expressions=None)
-ranker = Ranker(food_index, ingredient_index, preprocessor, ingredient_tokenizer, stopwords, BM25)
+food_preprocessor = fp.RegexTokenizer('\w+', lowercase=True, multiword_expressions=None)
+ingredient_preprocessor = ip.SplitTokenizer()
 
 with open(ID_TO_RECIPE_PATH, 'r') as json_file:
     id_to_recipe = json.load(json_file)
 
+ranker = Ranker(food_index, ingredient_index,
+                food_preprocessor, ingredient_preprocessor,
+                stopwords, BM25, id_to_recipe)
+
 print('Necessary data loaded!')
 
+# # try a quick lil silly goofy query
 # top25 = ranker.query(query_ingr='pie, flour, cream, apples, blueberries', query_freetext='sweet and spicy pie', query_NOT='eggs, pecans, nuts, almonds')[:25]
 
 # #print(top25)  # DEBUGGING
