@@ -21,12 +21,12 @@ class Ranker:
         '''
         Initializes the state of the Ranker object 
         '''
-        self.index = food_index
+        self.food_index = food_index
         self.ingredient_index = ingredient_index
-        self.tokenize = food_preprocessor.tokenize
+        self.food_tokenize = food_preprocessor.tokenize
         self.ingredient_tokenize = ingredient_preprocessor.tokenize
         if isinstance(scorer, type):
-            scorer = scorer(self.index)
+            scorer = scorer(self.food_index)
         self.scorer = scorer
         self.stopwords = stopwords
         self.id_to_recipe = id_to_recipe
@@ -48,7 +48,7 @@ class Ranker:
         # append ingredients and free text
         query = query_ingr + ' ' + query_freetext
         #print(query)  # DEBUGGING
-        tokenized_query = self.tokenize(query)
+        tokenized_query = self.food_tokenize(query)
         if self.stopwords is not None and len(self.stopwords) > 0:
             tokenized_query = [word for word in tokenized_query if word not in self.stopwords]
         #print(tokenized_query)  # DEBUGGING
@@ -63,7 +63,7 @@ class Ranker:
             if term == None:
                 continue
             else:
-                postings = self.index.get_postings(term)
+                postings = self.food_index.get_postings(term)
 
                 if postings is None:
                     continue
