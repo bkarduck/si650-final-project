@@ -9,3 +9,13 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Caches
+__pycache__
+
+# Inverted indexes
+food_index/food_index.json
+ingredient_index/ingredient_index.json
+
+# Jupyter notebooks
+*.ipynb
