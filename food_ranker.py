@@ -9,6 +9,8 @@ import math
 from tqdm import tqdm
 import json
 
+import ast
+
 
 class Ranker:
     '''
@@ -130,9 +132,31 @@ class Ranker:
         # will be higher than documents that contian none of the requested
         # ingredients, but still might match the free text query
         top_100, after_top_100 = results[:100], results[100:]
+        new_top_100 = []
+
+        for doc in top_100:  # doc is (id, score)
+            doc_NERs = ast.literal_eval(self.id_to_recipe[str(doc[0])][2])
+            #print(doc_NERs[:15])  # DEBUGGING
+            doc_NERs = [self.ingredient_tokenize(ner)[0] for ner in doc_NERs]
+            #print(doc_NERs[:15])  # DEBUGGING
+            num_NERs = len(doc_NERs)
+            num_wanted_in_NERs = 0
+
+            for ingredient in set(self.ingredient_tokenize(query_ingr)):
+                if ingredient in doc_NERs:
+                    num_wanted_in_NERs += 1
+            
+            doc_prop_score = num_wanted_in_NERs / num_NERs
+
+            new_top_100.append((doc[0], doc_prop_score))
+        
+        new_top_100.sort(key=lambda x: x[1], reverse=True)
 
         # combine the results again
-        results = top_100 + after_top_100
+        results = new_top_100 + after_top_100
+        # COMMENT OUT THE ABOVE RERANKING STEPS TO SEE DIFFERENCES
+        # this code reranks based on ingredients as mentioned above
+        # the original scores are lost but who cares I think???
         
         # TODO Return the **sorted** results as format [{docid: 9, score:0.5}, {{docid: 10, score:0.2}}] in descending score
         return results
