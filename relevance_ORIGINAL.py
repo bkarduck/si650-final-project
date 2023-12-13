@@ -103,31 +103,21 @@ def run_relevance_tests(relevance_data_filename: str, ranker) -> dict[str, float
         for line in csv_reader:
             if count == 0:
                 headers = line
-                freePosition = headers.index('free')
-                ingPosition = headers.index('ing')
-                not_ingPosition = headers.index('not_ing')
+                queryPosition = headers.index('query')
                 docidPosition = headers.index('recipeID')
                 relPosition = headers.index('rel')
                 count += 1
                 continue
             else:
                 count +=1
-                free = line[freePosition]
-                ing = line[ingPosition]
-                not_ing = line[not_ingPosition]
-
-                if free != ing:
-                    query = free + ' ' + ing
-                else:
-                    query = ing
+                query = line[queryPosition]
             
                 docid = line[docidPosition]
                 rel = line[relPosition]
-                
                 if query not in relevance_data:
-                    relevance_data[query] = [(int(docid), int(rel), ing, not_ing)]
+                    relevance_data[query] = [(int(docid), int(rel))]
                 else:
-                    relevance_data[query].append((int(docid), int(rel), ing, not_ing))
+                    relevance_data[query].append((int(docid), int(rel)))
 
         
     scoresList = {}
@@ -136,11 +126,11 @@ def run_relevance_tests(relevance_data_filename: str, ranker) -> dict[str, float
 
     idealScoreList = []
     tracker = 0
-    for query, id_rel_ing_not_ing in tqdm(relevance_data.items()):
+    for query, docid in tqdm(relevance_data.items()):
         if tracker == 10:
             break
   
-        queryResults = ranker.query(id_rel_ing_not_ing[0][2], query, id_rel_ing_not_ing[0][3])
+        queryResults = ranker.query(query)
         mapScoreList = []
         ndcgScoreList = []
  
@@ -150,7 +140,7 @@ def run_relevance_tests(relevance_data_filename: str, ranker) -> dict[str, float
             docidList = []
             relList = []
             
-            for rels in id_rel_ing_not_ing:
+            for rels in docid:
                 docidList.append(rels[0])
                 relList.append(rels[1])
             if doc[0] in docidList:
