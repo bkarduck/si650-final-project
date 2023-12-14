@@ -141,14 +141,23 @@ class Ranker:
             #print(doc_NERs[:15])  # DEBUGGING
             num_NERs = len(doc_NERs)
             num_wanted_in_NERs = 0
+            wanted_ing = set(self.ingredient_tokenize(query_ingr))
+            num_wanted_ing = len(wanted_ing)
 
-            for ingredient in set(self.ingredient_tokenize(query_ingr)):
+            for ingredient in wanted_ing:
                 if ingredient in doc_NERs:
                     num_wanted_in_NERs += 1
             
-            doc_prop_score = num_wanted_in_NERs / num_NERs
+            user_prop_score = num_wanted_in_NERs / num_wanted_ing
+            doc_prop_score = num_wanted_in_NERs / num_NERs  # WORSE
 
-            new_top_100.append((doc[0], doc_prop_score))
+            new_top_100.append((doc[0], user_prop_score))  # * doc[1]
+            #new_top_100.append((doc[0], doc_prop_score))  # WORSE
+            #new_top_100.append((doc[0], (0.8 * user_prop_score + 0.2 * doc_prop_score)))  # INTERP
+            # try:  # HARMONIC MEAN
+            #     new_top_100.append((doc[0], 2 / ((1 / user_prop_score) + (1 / doc_prop_score))))
+            # except ZeroDivisionError:
+            #     new_top_100.append((doc[0], 0))
         
         new_top_100.sort(key=lambda x: x[1], reverse=True)
 

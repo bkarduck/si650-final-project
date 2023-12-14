@@ -140,7 +140,9 @@ def run_relevance_tests(relevance_data_filename: str, ranker) -> dict[str, float
         if tracker == 10:
             break
   
-        queryResults = ranker.query(id_rel_ing_not_ing[0][2], query, id_rel_ing_not_ing[0][3])
+        # wanted ingredients, free text, unwanted ingredients
+        queryResults = ranker.query(id_rel_ing_not_ing[0][2], query, id_rel_ing_not_ing[0][3])  # WITH NOTS
+        #queryResults = ranker.query(id_rel_ing_not_ing[0][2], query, '')  # WITHOUT NOTS
         mapScoreList = []
         ndcgScoreList = []
  
