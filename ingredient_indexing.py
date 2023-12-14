@@ -72,7 +72,7 @@ class InvertedIndex:
         # TODO: Implement this to add documents to the index
         length = len(tokens)
         if length == 0:
-            self.document_metadata[docid] = {'length': 0, 'unique_tokens': 0}
+            self.document_metadata[docid] = {'length': 0, 'unique_tokens': 0, 'unique_token_count': 0}
             return
         
         unique_token_count = 0
